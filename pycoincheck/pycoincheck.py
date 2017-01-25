@@ -8,9 +8,10 @@ import hashlib
 import urllib
 
 
+
 class API(object):
     def __init__(self, api_key=None, api_secret=None):
-        self.api_url = "https://coincheck.com/api/"
+        self.api_url = "https://coincheck.com"
         self.api_key = api_key
         self.api_secret = api_secret
 
@@ -29,7 +30,9 @@ class API(object):
             access_timestamp = str(time.time())
             api_secret = str.encode(self.api_secret)
             text = str.encode(access_timestamp + method + endpoint + body)
-            access_sign = hmac.new(api_secret, text, hashlib.sha256).hexdigest()
+            access_sign = hmac.new(api_secret,
+                                   text,
+                                   hashlib.sha256).hexdigest()
             auth_header = {
                 "ACCESS-KEY": self.api_key,
                 "ACCESS-TIMESTAMP": access_timestamp,
@@ -37,14 +40,13 @@ class API(object):
                 "Content-Type": "application/json"
             }
 
-        # TODO:例外処理したほうがいいかも
         with requests.Session() as s:
             if auth_header:
                 s.headers.update(auth_header)
 
             if method == "GET":
                 response = s.get(url, params=params)
-            else:
+            else:  # method == "POST":
                 response = s.post(url, data=json.dumps(params))
 
         content = json.loads(response.content.decode("utf-8"))
@@ -81,7 +83,7 @@ class API(object):
         endpoint = "/api/trades"
         return self.request(endpoint, params=params)
 
-    def order_books(self, **params):
+    def board(self, **params):
         """
         板情報
         板情報を取得できます。
